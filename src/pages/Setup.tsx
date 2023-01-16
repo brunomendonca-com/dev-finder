@@ -1,9 +1,11 @@
 import { StackScreenProps } from '@react-navigation/stack';
+import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
 import React, { useContext, useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spinner from 'react-native-loading-spinner-overlay';
+import MapView, { LatLng, Marker, Region } from 'react-native-maps';
 import BigButton from '../components/BigButton';
 import { AuthenticationContext } from '../context/AuthenticationContext';
 import * as api from '../services/api';
@@ -16,6 +18,14 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
     const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
     const [authError, setAuthError] = useState<string>();
+
+    const [userLocation, setUserLocation] = useState<LatLng>();
+    const [currentRegion, setCurrentRegion] = useState<Region>({
+        latitude: 51.03,
+        longitude: -114.093,
+        latitudeDelta: 0.004,
+        longitudeDelta: 0.004,
+    });
 
     // useEffect(() => {
     //     getFromCache('userInfo').then(
@@ -30,6 +40,26 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
     // useEffect(() => {
     //     if (authenticationContext?.value) navigation.navigate('Main');
     // }, []);
+
+    useEffect(() => {
+        loadInitialPosition();
+    }, []);
+
+    async function loadInitialPosition() {
+        const { status } = await requestForegroundPermissionsAsync();
+
+        if (status === 'granted') {
+            const { coords } = await getCurrentPositionAsync();
+            setUserLocation(coords);
+
+            const { latitude, longitude } = coords;
+            setCurrentRegion({
+                ...currentRegion,
+                latitude,
+                longitude,
+            });
+        }
+    }
 
     const handleAuthentication = () => {
         setIsAuthenticating(true);
@@ -55,35 +85,42 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
     };
 
     return (
-        <KeyboardAwareScrollView
-            style={styles.container}
-            contentContainerStyle={{
-                padding: 24,
-                flexGrow: 1,
-                justifyContent: 'flex-end',
-                alignItems: 'stretch',
-                backgroundColor: '#00A3FF',
-            }}
-        >
-            <View style={styles.inputLabelRow}>
-                <Text style={styles.label}>Github Username</Text>
-                {usernameIsInvalid && <Text style={styles.error}>invalid username</Text>}
-            </View>
-            <TextInput
-                style={[styles.input, usernameIsInvalid && { borderColor: 'red' }]}
-                onChangeText={(value) => setUsername(value)}
-                onEndEditing={() => {
-                    // TODO setUsernameIsInvalid
+        <>
+            <KeyboardAwareScrollView
+                style={styles.container}
+                contentContainerStyle={{
+                    padding: 24,
+                    flexGrow: 1,
+                    justifyContent: 'flex-end',
+                    alignItems: 'stretch',
                 }}
-            />
-            <BigButton onPress={handleAuthentication} label="Next" color="#031A62" />
-            <Spinner
-                visible={isAuthenticating}
-                textContent={'Authenticating...'}
-                overlayColor="#031A62BF"
-                textStyle={styles.spinnerText}
-            />
-        </KeyboardAwareScrollView>
+            >
+                <MapView
+                    onRegionChangeComplete={() => {}}
+                    showsUserLocation={true}
+                    initialRegion={currentRegion}
+                    style={styles.map}
+                >
+                    {userLocation && <Marker coordinate={userLocation} />}
+                </MapView>
+                <TextInput
+                    style={[styles.input, usernameIsInvalid && { borderColor: 'red' }]}
+                    autoCapitalize="none"
+                    placeholder="Insert your github username..."
+                    onChangeText={(value) => setUsername(value)}
+                    onEndEditing={() => {
+                        // TODO setUsernameIsInvalid
+                    }}
+                />
+                <BigButton onPress={handleAuthentication} label="Next" color="#031A62" />
+                <Spinner
+                    visible={isAuthenticating}
+                    textContent={'Authenticating...'}
+                    overlayColor="#031A62BF"
+                    textStyle={styles.spinnerText}
+                />
+            </KeyboardAwareScrollView>
+        </>
     );
 }
 
@@ -92,25 +129,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
+    map: {
+        ...StyleSheet.absoluteFillObject,
+    },
+
     spinnerText: {
         fontSize: 16,
         color: '#fff',
     },
 
-    inputLabelRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'baseline',
-        marginBottom: 4,
-    },
-
-    label: {
-        color: '#fff',
-    },
-
     input: {
         backgroundColor: '#fff',
-        border: 'none',
+        borderColor: '#031b6233',
+        borderWidth: 1,
         height: 56,
         paddingTop: 16,
         paddingBottom: 16,
@@ -121,7 +152,7 @@ const styles = StyleSheet.create({
     },
 
     error: {
-        color: 'white',
+        color: '#fff',
         fontSize: 12,
     },
 });
