@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Image, View, Text } from 'react-native';
 import MapView, { Marker, Callout, LatLng, Region } from 'react-native-maps';
 import { requestForegroundPermissionsAsync, getCurrentPositionAsync } from 'expo-location';
+import { StackScreenProps } from '@react-navigation/stack';
 
 import devsDb from '../../db.json';
 
@@ -15,7 +16,7 @@ interface Developer {
     coordinates: LatLng;
 }
 
-function Main({ navigation }: any) {
+function Main({ navigation }: StackScreenProps<any>) {
     const mapViewRef = useRef<MapView>(null);
     const [devs, setDevs] = useState<Developer[]>([]);
     const [userLocation, setUserLocation] = useState<LatLng | undefined>();

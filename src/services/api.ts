@@ -1,7 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
-const api = axios.create({
+export const api = axios.create({
     baseURL: 'https://api.github.com/',
 });
 
-export default api;
+export const getUserInfo = (username: string): Promise<AxiosResponse> => {
+    return api.get(`/users/${username}`);
+};

@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 import Main from './pages/Main';
 import Profile from './pages/Profile';
+import Setup from './pages/Setup';
 
 const { Navigator, Screen } = createStackNavigator();
 
@@ -10,7 +11,7 @@ export default function Routes() {
     return (
         <NavigationContainer>
             <Navigator
-                initialRouteName="Main"
+                initialRouteName="Signup"
                 screenOptions={{
                     headerMode: 'screen',
                     headerTintColor: 'white',
@@ -19,10 +20,17 @@ export default function Routes() {
                 }}
             >
                 <Screen
+                    name="Setup"
+                    component={Setup}
+                    options={{
+                        title: 'DevFinder Setup',
+                    }}
+                />
+                <Screen
                     name="Main"
                     component={Main}
                     options={{
-                        title: 'DevFinder',
+                        title: 'DevFinder Map',
                     }}
                 />
                 <Screen
