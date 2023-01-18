@@ -1,15 +1,13 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
-import React, { useContext, useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
-import { RectButton } from 'react-native-gesture-handler';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { StyleSheet, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spinner from 'react-native-loading-spinner-overlay';
-import MapView, { LatLng, Marker, Region } from 'react-native-maps';
+import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
 import BigButton from '../components/BigButton';
 import { AuthenticationContext } from '../context/AuthenticationContext';
 import * as api from '../services/api';
-import { getFromCache, setInCache } from '../services/caching';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
@@ -19,12 +17,14 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
     const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
     const [authError, setAuthError] = useState<string>();
 
-    const [userLocation, setUserLocation] = useState<LatLng>();
+    const mapViewRef = useRef<MapView>(null);
+    const initialLocation = { latitude: 51.03, longitude: -114.093 };
+
+    const [markerLocation, setMarkerLocation] = useState<LatLng>();
     const [currentRegion, setCurrentRegion] = useState<Region>({
-        latitude: 51.03,
-        longitude: -114.093,
-        latitudeDelta: 0.004,
-        longitudeDelta: 0.004,
+        ...initialLocation,
+        latitudeDelta: 0.008,
+        longitudeDelta: 0.008,
     });
 
     // useEffect(() => {
@@ -50,16 +50,18 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
         if (status === 'granted') {
             const { coords } = await getCurrentPositionAsync();
-            setUserLocation(coords);
-
-            const { latitude, longitude } = coords;
-            setCurrentRegion({
-                ...currentRegion,
-                latitude,
-                longitude,
-            });
+            setMarkerLocation(coords);
+            setCurrentRegion({ ...currentRegion, ...coords });
         }
     }
+
+    const zoomToUserLocation = () => {
+        mapViewRef.current?.animateToRegion(currentRegion);
+    };
+
+    const handleMapPress = (event: MapPressEvent) => {
+        setMarkerLocation(event.nativeEvent.coordinate);
+    };
 
     const handleAuthentication = () => {
         setIsAuthenticating(true);
@@ -96,12 +98,15 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                 }}
             >
                 <MapView
+                    ref={mapViewRef}
                     onRegionChangeComplete={() => {}}
                     showsUserLocation={true}
-                    initialRegion={currentRegion}
+                    region={currentRegion}
                     style={styles.map}
+                    onMapReady={zoomToUserLocation}
+                    onPress={handleMapPress}
                 >
-                    {userLocation && <Marker coordinate={userLocation} />}
+                    {markerLocation && <Marker coordinate={markerLocation} />}
                 </MapView>
                 <TextInput
                     style={[styles.input, usernameIsInvalid && { borderColor: 'red' }]}
