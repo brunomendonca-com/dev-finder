@@ -1,21 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Image, View, Text } from 'react-native';
-import MapView, { Marker, Callout, LatLng, Region } from 'react-native-maps';
-import { requestForegroundPermissionsAsync, getCurrentPositionAsync } from 'expo-location';
 import { StackScreenProps } from '@react-navigation/stack';
-
-import devsDb from '../../db.json';
+import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import MapView, { LatLng, Region } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
 
-interface Developer {
-    id: number;
-    name: string;
-    avatar_url: string;
-    login: string;
-    company: string;
-    bio: string;
-    coordinates: LatLng;
-}
+import devsDb from '../../db.json';
+import CustomMarker from '../components/CustomMarker';
+import { Developer } from '../types/Developer';
 
 function Main({ navigation }: StackScreenProps<any>) {
     const mapViewRef = useRef<MapView>(null);
@@ -76,26 +68,16 @@ function Main({ navigation }: StackScreenProps<any>) {
                 showsUserLocation={true}
                 initialRegion={currentRegion}
                 style={styles.map}
-                onMapReady={() => {
-                    fitAll();
-                }}
+                onMapReady={fitAll}
             >
                 {devs.map((dev) => (
-                    <Marker key={dev.id} coordinate={dev.coordinates}>
-                        <Image style={styles.avatar} source={{ uri: dev.avatar_url }} resizeMode="contain" />
-
-                        <Callout
-                            onPress={() => {
-                                navigation.navigate('Profile', { githubUsername: dev.login });
-                            }}
-                        >
-                            <View style={styles.callout}>
-                                <Text style={styles.devName}>{dev.name}</Text>
-                                <Text style={styles.devCompany}>{dev.company}</Text>
-                                <Text style={styles.devBio}>{dev.bio}</Text>
-                            </View>
-                        </Callout>
-                    </Marker>
+                    <CustomMarker
+                        key={dev.id}
+                        data={dev}
+                        navigateToProfile={(githubUsername) => {
+                            navigation.navigate('Profile', { githubUsername });
+                        }}
+                    />
                 ))}
             </MapView>
         </>
@@ -105,33 +87,6 @@ function Main({ navigation }: StackScreenProps<any>) {
 const styles = StyleSheet.create({
     map: {
         flex: 1,
-    },
-
-    avatar: {
-        width: 54,
-        height: 54,
-        borderRadius: 4,
-        borderWidth: 4,
-        borderColor: '#FFF',
-    },
-
-    callout: {
-        width: 260,
-    },
-
-    devName: {
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-
-    devCompany: {
-        color: '#666',
-        fontSize: 12,
-    },
-
-    devBio: {
-        color: '#666',
-        marginTop: 5,
     },
 });
 
