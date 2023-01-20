@@ -1,13 +1,16 @@
-import { StackScreenProps } from '@react-navigation/stack';
-import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
+import * as api from '../services/api';
+
+import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
+import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
+
+import { AuthenticationContext } from '../context/AuthenticationContext';
+import BigButton from '../components/BigButton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spinner from 'react-native-loading-spinner-overlay';
-import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
-import BigButton from '../components/BigButton';
-import { AuthenticationContext } from '../context/AuthenticationContext';
-import * as api from '../services/api';
+import { StackScreenProps } from '@react-navigation/stack';
+import { StatusBar } from 'expo-status-bar';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
@@ -88,6 +91,7 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
     return (
         <>
+            <StatusBar style="dark" />
             <KeyboardAwareScrollView
                 style={styles.container}
                 contentContainerStyle={{

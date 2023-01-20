@@ -23,14 +23,14 @@ export default function Routes() {
                     name="Setup"
                     component={Setup}
                     options={{
-                        title: 'DevFinder Setup',
+                        headerShown: false,
                     }}
                 />
                 <Screen
                     name="Main"
                     component={Main}
                     options={{
-                        title: 'DevFinder Map',
+                        headerShown: false,
                     }}
                 />
                 <Screen

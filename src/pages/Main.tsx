@@ -5,6 +5,7 @@ import { requestForegroundPermissionsAsync, getCurrentPositionAsync } from 'expo
 import { StackScreenProps } from '@react-navigation/stack';
 
 import devsDb from '../../db.json';
+import { StatusBar } from 'expo-status-bar';
 
 interface Developer {
     id: number;
@@ -68,6 +69,7 @@ function Main({ navigation }: StackScreenProps<any>) {
 
     return (
         <>
+            <StatusBar style="dark" />
             <MapView
                 ref={mapViewRef}
                 onRegionChangeComplete={handleRegionChanged}
