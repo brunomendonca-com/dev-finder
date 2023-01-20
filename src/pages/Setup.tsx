@@ -1,4 +1,5 @@
-import * as api from '../services/api';
+import * as github from '../services/github';
+
 
 import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
 import React, { useContext, useEffect, useRef, useState } from 'react';
@@ -11,14 +12,15 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import Spinner from 'react-native-loading-spinner-overlay';
 import { StackScreenProps } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
+import { postUser } from '../services/api';
+import { getFromCache, setInCache } from '../services/caching';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
     const [username, setUsername] = useState('');
     const [usernameIsInvalid, setUsernameIsInvalid] = useState<boolean>(false);
 
-    const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
-    const [authError, setAuthError] = useState<string>();
+    const [isAuthenticating, setIsAuthenticating] = useState<boolean>(true);
 
     const mapViewRef = useRef<MapView>(null);
     const initialLocation = { latitude: 51.03, longitude: -114.093 };
@@ -30,19 +32,18 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
         longitudeDelta: 0.008,
     });
 
-    // useEffect(() => {
-    //     getFromCache('userInfo').then(
-    //         (cachedUserInfo) => authenticationContext?.setValue(cachedUserInfo as User),
-    //         (error: any) => console.log(error)
-    //     );
 
-    //     if (authError)
-    //         Alert.alert('Authentication Error', authError, [{ text: 'Ok', onPress: () => setAuthError(undefined) }]);
-    // }, [authError]);
-
-    // useEffect(() => {
-    //     if (authenticationContext?.value) navigation.navigate('Main');
-    // }, []);
+    useEffect(() => {
+      getFromCache("currentUser")
+        .then((currentUser) => {
+          authenticationContext?.setValue(currentUser as string);
+          navigation.navigate("Main");
+        })
+        .catch(() => {
+          /* do nothing i.e. keep user on setup page */
+        })
+        .finally(() => setIsAuthenticating(false));
+    }, []);
 
     useEffect(() => {
         loadInitialPosition();
@@ -68,23 +69,25 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
     const handleAuthentication = () => {
         setIsAuthenticating(true);
-        api.getUserInfo(username)
-            .then((response) => {
-                // setInCache('currentUser', response.data.user);
-                // authenticationContext?.setValue(response.data.user);
-                // setIsAuthenticating(false);
-                // navigation.navigate('EventsMap');
-
-                console.log(response);
+        github.getUserInfo(username)
+            .then(() => postUser({ github: username, location: {
+                // TODO get rid of || 0
+                latitude: markerLocation?.latitude || 0,
+                longitude: markerLocation?.longitude || 0,
+            } }))
+            .then(() => {
+                setInCache('currentUser', username);
+                authenticationContext?.setValue(username);
                 setIsAuthenticating(false);
                 navigation.replace('Main');
             })
             .catch((error) => {
-                if (error.response) {
-                    setAuthError(error.response.data);
-                } else {
-                    setAuthError('Something went wrong.');
-                }
+                // console.log(error)
+                // if (error.response) {
+                //     setAuthError(error.response.data);
+                // } else {
+                //     setAuthError('Something went wrong.');
+                // }
                 setIsAuthenticating(false);
             });
     };
