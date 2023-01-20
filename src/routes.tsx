@@ -11,7 +11,7 @@ export default function Routes() {
     return (
         <NavigationContainer>
             <Navigator
-                initialRouteName="Signup"
+                initialRouteName="Setup"
                 screenOptions={{
                     headerMode: 'screen',
                     headerTintColor: 'white',

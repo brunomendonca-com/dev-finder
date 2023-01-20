@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Image, View, Text } from 'react-native';
-import MapView, { Marker, Callout, LatLng, Region } from 'react-native-maps';
-import { requestForegroundPermissionsAsync, getCurrentPositionAsync } from 'expo-location';
 import { StackScreenProps } from '@react-navigation/stack';
-
+import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, Text } from 'react-native';
+import { RectButton } from 'react-native-gesture-handler';
+import MapView, { LatLng, Region } from 'react-native-maps';
+
+import CustomMarker from '../components/CustomMarker';
 import { getUsers } from '../services/api';
+import { removeFromCache } from '../services/caching';
 import User from '../types/user';
 
 function Main({ navigation }: StackScreenProps<any>) {
@@ -15,11 +18,9 @@ function Main({ navigation }: StackScreenProps<any>) {
     const [currentRegion, setCurrentRegion] = useState<Region>();
 
     useEffect(() => {
-        getUsers()
-        .then(users => {
-            console.log(users.data)
-            setDevs(users.data)
-        })
+        getUsers().then((users) => {
+            setDevs(users.data);
+        });
 
         loadInitialPosition();
     }, []);
@@ -41,8 +42,14 @@ function Main({ navigation }: StackScreenProps<any>) {
         }
     }
 
-    function handleRegionChanged(region: any) {
-        setCurrentRegion(region);
+    function handleLogout() {
+        try {
+            removeFromCache('currentUser1');
+            navigation.replace('Setup');
+        } catch (e) {
+            console.log('[handleLogout]', e);
+            Alert.alert('Something went wrong.');
+        }
     }
 
     function fitAll() {
@@ -50,7 +57,7 @@ function Main({ navigation }: StackScreenProps<any>) {
         if (userLocation) locations.push(userLocation);
         mapViewRef.current?.fitToCoordinates(locations, {
             edgePadding: {
-                top: 64,
+                top: 128,
                 right: 64,
                 bottom: 64,
                 left: 64,
@@ -68,32 +75,28 @@ function Main({ navigation }: StackScreenProps<any>) {
             <StatusBar style="dark" />
             <MapView
                 ref={mapViewRef}
-                onRegionChangeComplete={handleRegionChanged}
-                showsUserLocation={true}
-                initialRegion={currentRegion}
                 style={styles.map}
-                onMapReady={() => {
-                    fitAll();
-                }}
+                initialRegion={currentRegion}
+                onMapReady={fitAll}
+                showsUserLocation={true}
+                showsMyLocationButton={false}
+                moveOnMarkerPress={false}
+                toolbarEnabled={false}
+                provider="google"
             >
                 {devs.map((dev) => (
-                    <Marker key={dev.id} coordinate={dev.coordinates}>
-                        <Image style={styles.avatar} source={{ uri: dev.avatar_url }} resizeMode="contain" />
-
-                        <Callout
-                            onPress={() => {
-                                navigation.navigate('Profile', { githubUsername: dev.login });
-                            }}
-                        >
-                            <View style={styles.callout}>
-                                <Text style={styles.devName}>{dev.name}</Text>
-                                <Text style={styles.devCompany}>{dev.company}</Text>
-                                <Text style={styles.devBio}>{dev.bio}</Text>
-                            </View>
-                        </Callout>
-                    </Marker>
+                    <CustomMarker
+                        key={dev.id}
+                        data={dev}
+                        handleCalloutPress={(githubUsername) => {
+                            navigation.navigate('Profile', { githubUsername });
+                        }}
+                    />
                 ))}
             </MapView>
+            <RectButton style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.buttonLabel}>Logout</Text>
+            </RectButton>
         </>
     );
 }
@@ -103,31 +106,21 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
-    avatar: {
-        width: 54,
-        height: 54,
+    logoutButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        top: 64,
+        right: 24,
+        height: 40,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        backgroundColor: '#031A62',
         borderRadius: 4,
-        borderWidth: 4,
-        borderColor: '#FFF',
     },
 
-    callout: {
-        width: 260,
-    },
-
-    devName: {
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-
-    devCompany: {
-        color: '#666',
-        fontSize: 12,
-    },
-
-    devBio: {
-        color: '#666',
-        marginTop: 5,
+    buttonLabel: {
+        color: 'white',
     },
 });
 

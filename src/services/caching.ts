@@ -15,6 +15,10 @@ export const setInCache = (key: string, value: any) => {
     return AsyncStorage.setItem(key, jsonValue);
 };
 
+export const removeFromCache = (key: string) => {
+    return AsyncStorage.removeItem(key);
+};
+
 export const getFromCache = async <T>(key: string): Promise<T> => {
     const json = await AsyncStorage.getItem(key);
     return await (json != null ? Promise.resolve(JSON.parse(json)) : Promise.reject(`Key "${key}" not in cache`));

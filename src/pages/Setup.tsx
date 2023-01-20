@@ -1,19 +1,18 @@
 import * as github from '../services/github';
 
-import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, TextInput } from 'react-native';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
+import React, { useContext, useEffect, useState } from 'react';
+import { StyleSheet, TextInput } from 'react-native';
+import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
 
-import { AuthenticationContext } from '../context/AuthenticationContext';
-import BigButton from '../components/BigButton';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import Spinner from 'react-native-loading-spinner-overlay';
 import { StackScreenProps } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Spinner from 'react-native-loading-spinner-overlay';
+import BigButton from '../components/BigButton';
+import { AuthenticationContext } from '../context/AuthenticationContext';
 import { postUser } from '../services/api';
 import { getFromCache, setInCache } from '../services/caching';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
@@ -22,14 +21,13 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
     const [isAuthenticating, setIsAuthenticating] = useState<boolean>(true);
 
-    const mapViewRef = useRef<MapView>(null);
-    const initialLocation = { latitude: 51.03, longitude: -114.093 };
+    const defaultLocation = { latitude: 51.03, longitude: -114.093 };
 
-    const [markerLocation, setMarkerLocation] = useState<LatLng>(initialLocation);
+    const [markerLocation, setMarkerLocation] = useState<LatLng>(defaultLocation);
     const [currentRegion, setCurrentRegion] = useState<Region>({
-        ...initialLocation,
-        latitudeDelta: 0.008,
-        longitudeDelta: 0.008,
+        ...defaultLocation,
+        latitudeDelta: 0.004,
+        longitudeDelta: 0.004,
     });
 
     useEffect(() => {
@@ -58,10 +56,6 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
         }
     }
 
-    const zoomToUserLocation = () => {
-        mapViewRef.current?.animateToRegion(currentRegion);
-    };
-
     const handleMapPress = (event: MapPressEvent) => {
         setMarkerLocation(event.nativeEvent.coordinate);
     };
@@ -70,7 +64,8 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
         setIsAuthenticating(true);
         github
             .getUserInfo(username)
-            .then(({ data: githubInfo }) =>
+            .then(({ data: githubInfo }) => {
+                // TODO check if user already exists and prevent duplications
                 postUser({
                     login: githubInfo.login,
                     avatar_url: githubInfo.avatar_url,
@@ -81,8 +76,8 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                         longitude: markerLocation.longitude,
                     },
                     name: githubInfo.name,
-                })
-            )
+                });
+            })
             .then(() => {
                 setInCache('currentUser', username);
                 authenticationContext?.setValue(username);
@@ -113,19 +108,21 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                 }}
             >
                 <MapView
-                    ref={mapViewRef}
-                    onRegionChangeComplete={() => {}}
-                    showsUserLocation={true}
+                    onPress={handleMapPress}
                     region={currentRegion}
                     style={styles.map}
-                    onMapReady={zoomToUserLocation}
-                    onPress={handleMapPress}
+                    showsUserLocation={true}
+                    showsMyLocationButton={false}
+                    toolbarEnabled={false}
+                    provider="google"
+                    mapPadding={{ top: 64, right: 24, bottom: 128, left: 24 }}
                 >
                     <Marker coordinate={markerLocation} />
                 </MapView>
                 <TextInput
                     style={[styles.input, usernameIsInvalid && { borderColor: 'red' }]}
                     autoCapitalize="none"
+                    autoCorrect={false}
                     placeholder="Insert your github username..."
                     onChangeText={(value) => setUsername(value)}
                     onEndEditing={() => {
@@ -161,10 +158,10 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: '#fff',
         borderColor: '#031b6233',
+        borderRadius: 4,
         borderWidth: 1,
         height: 56,
-        paddingTop: 16,
-        paddingBottom: 16,
+        paddingVertical: 16,
         paddingHorizontal: 24,
         marginBottom: 16,
         color: '#333',
