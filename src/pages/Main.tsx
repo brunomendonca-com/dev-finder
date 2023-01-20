@@ -6,33 +6,20 @@ import { StackScreenProps } from '@react-navigation/stack';
 
 import { StatusBar } from 'expo-status-bar';
 import { getUsers } from '../services/api';
-
-interface Developer {
-    id: number;
-    name: string;
-    avatar_url: string;
-    login: string;
-    company: string;
-    bio: string;
-    coordinates: LatLng;
-}
+import User from '../types/user';
 
 function Main({ navigation }: StackScreenProps<any>) {
     const mapViewRef = useRef<MapView>(null);
-    const [devs, setDevs] = useState<Developer[]>([]);
+    const [devs, setDevs] = useState<User[]>([]);
     const [userLocation, setUserLocation] = useState<LatLng | undefined>();
     const [currentRegion, setCurrentRegion] = useState<Region>();
 
     useEffect(() => {
-        getUsers().then(users => setDevs(users.data.map(user => ({
-            id: user.id,
-            name: user.github,
-            avatar_url: "https://i1.wp.com/aaronphelan.me/wp-content/uploads/2020/06/undraw_male_avatar_323b.png",
-            login: "string",
-            company: "string",
-            bio: "string",
-            coordinates: user.location,
-        }))))
+        getUsers()
+        .then(users => {
+            console.log(users.data)
+            setDevs(users.data)
+        })
 
         loadInitialPosition();
     }, []);

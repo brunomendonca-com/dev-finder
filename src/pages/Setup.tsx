@@ -14,6 +14,7 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { postUser } from '../services/api';
 import { getFromCache, setInCache } from '../services/caching';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
@@ -70,11 +71,18 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
     const handleAuthentication = () => {
         setIsAuthenticating(true);
         github.getUserInfo(username)
-            .then(() => postUser({ github: username, location: {
-                // TODO get rid of || 0
-                latitude: markerLocation?.latitude || 0,
-                longitude: markerLocation?.longitude || 0,
-            } }))
+            .then(({data: githubInfo}) => postUser({
+                login: githubInfo.login,
+                avatar_url: githubInfo.avatar_url,
+                bio: githubInfo.bio,
+                company: githubInfo.company,
+                coordinates: {
+                    // TODO get rid of || 0
+                    latitude: markerLocation?.latitude || 0,
+                    longitude: markerLocation?.longitude || 0,
+                },
+                name: githubInfo.name,
+            }))
             .then(() => {
                 setInCache('currentUser', username);
                 authenticationContext?.setValue(username);
