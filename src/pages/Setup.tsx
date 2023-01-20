@@ -1,6 +1,5 @@
 import * as github from '../services/github';
 
-
 import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
@@ -26,24 +25,23 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
     const mapViewRef = useRef<MapView>(null);
     const initialLocation = { latitude: 51.03, longitude: -114.093 };
 
-    const [markerLocation, setMarkerLocation] = useState<LatLng>();
+    const [markerLocation, setMarkerLocation] = useState<LatLng>(initialLocation);
     const [currentRegion, setCurrentRegion] = useState<Region>({
         ...initialLocation,
         latitudeDelta: 0.008,
         longitudeDelta: 0.008,
     });
 
-
     useEffect(() => {
-      getFromCache("currentUser")
-        .then((currentUser) => {
-          authenticationContext?.setValue(currentUser as string);
-          navigation.navigate("Main");
-        })
-        .catch(() => {
-          /* do nothing i.e. keep user on setup page */
-        })
-        .finally(() => setIsAuthenticating(false));
+        getFromCache('currentUser')
+            .then((currentUser) => {
+                authenticationContext?.setValue(currentUser as string);
+                navigation.navigate('Main');
+            })
+            .catch(() => {
+                /* do nothing i.e. keep user on setup page */
+            })
+            .finally(() => setIsAuthenticating(false));
     }, []);
 
     useEffect(() => {
@@ -70,19 +68,21 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
     const handleAuthentication = () => {
         setIsAuthenticating(true);
-        github.getUserInfo(username)
-            .then(({data: githubInfo}) => postUser({
-                login: githubInfo.login,
-                avatar_url: githubInfo.avatar_url,
-                bio: githubInfo.bio,
-                company: githubInfo.company,
-                coordinates: {
-                    // TODO get rid of || 0
-                    latitude: markerLocation?.latitude || 0,
-                    longitude: markerLocation?.longitude || 0,
-                },
-                name: githubInfo.name,
-            }))
+        github
+            .getUserInfo(username)
+            .then(({ data: githubInfo }) =>
+                postUser({
+                    login: githubInfo.login,
+                    avatar_url: githubInfo.avatar_url,
+                    bio: githubInfo.bio,
+                    company: githubInfo.company,
+                    coordinates: {
+                        latitude: markerLocation.latitude,
+                        longitude: markerLocation.longitude,
+                    },
+                    name: githubInfo.name,
+                })
+            )
             .then(() => {
                 setInCache('currentUser', username);
                 authenticationContext?.setValue(username);
@@ -121,7 +121,7 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                     onMapReady={zoomToUserLocation}
                     onPress={handleMapPress}
                 >
-                    {markerLocation && <Marker coordinate={markerLocation} />}
+                    <Marker coordinate={markerLocation} />
                 </MapView>
                 <TextInput
                     style={[styles.input, usernameIsInvalid && { borderColor: 'red' }]}
