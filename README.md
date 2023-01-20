@@ -29,4 +29,4 @@ TBD
 
 ## Support
 
-Please see if your question or issue is already filed by searching in [current issues](./issues); if not, feel free to create a new one.
+Please see if your question or issue is already filed by searching in [current issues](https://github.com/bvc-mobile-dev/dev-finder/issues); if not, feel free to create a new one.
