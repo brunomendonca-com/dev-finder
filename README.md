@@ -12,20 +12,35 @@ The app is not released in the app stores. If you want to run it, follow the [se
 
 ### Backend setup
 
-TBD
+#### Setting up the fake API (json-server)
+
+Before running your 'json-server' update the file `src/services/api.ts` to include your computer's IP address. Change the baseURL to `http://your_ip_address_here:3333` and then run:
+
+```
+npx json-server --watch db.json --port 3333 --host your_ip_address_here
+```
+
+#### Acessing your database online (my-json-server)
+
+To access your server online without running json-server locally, you can set your baseURL to:
+
+```
+https://my-json-server.typicode.com/<your-github-username>/<your-github-repo>
+```
+
+To use `my-json-server`, make sure your `db.json` is located at the repo root.
 
 ### Setup
 
-- Clone this repository
-- `npm i`
-- Start your own BE server (see [backend setup](#backend-setup))
-- Enter you server's address as `BASE_URL` (see [api/constants.ts](./api/constants.ts))
-- `npm expo start`
-- Load app through Expo Go
+-   Clone this repository
+-   `npm i`
+-   Start your own BE server (see [backend setup](#backend-setup))
+-   `npm expo start`
+-   Load app through Expo Go
 
 ### Running tests
 
-- `npm test`
+-   `npm test`
 
 ## Support
 
