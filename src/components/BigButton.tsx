@@ -31,6 +31,7 @@ const styling = ({ color, disabled }: BigButtonProps) =>
             paddingHorizontal: 32,
             backgroundColor: disabled ? color + '80' : color,
             maxHeight: 56,
+            borderRadius: 4,
 
             flexDirection: 'row',
             justifyContent: 'center',

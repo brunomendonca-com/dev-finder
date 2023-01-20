@@ -6,15 +6,23 @@ import { Developer } from '../types/Developer';
 
 interface CustomMarkerProps {
     data: Developer;
-    navigateToProfile: (username: string) => void;
+    handleCalloutPress: (username: string) => void;
 }
 
-export default function CustomMarker({ data: dev, navigateToProfile }: CustomMarkerProps) {
-    return (
-        <Marker key={dev.id} coordinate={dev.coordinates}>
-            <Image style={styles.avatar} source={{ uri: dev.avatar_url }} resizeMode="contain" />
+// TODO get current user from context
+const currentUsername = 'brunomendonca-com';
 
-            <Callout onPress={() => navigateToProfile(dev.login)}>
+export default function CustomMarker({ data: dev, handleCalloutPress }: CustomMarkerProps) {
+    const isCurrentUser = dev.login === currentUsername;
+
+    return (
+        <Marker key={dev.id} coordinate={dev.coordinates} onCalloutPress={() => handleCalloutPress(dev.login)}>
+            <Image
+                style={[styles.avatar, isCurrentUser && styles.currentUser]}
+                source={{ uri: dev.avatar_url }}
+                resizeMode="contain"
+            />
+            <Callout>
                 <View style={styles.callout}>
                     <Text style={styles.devName}>{dev.name}</Text>
                     <Text style={styles.devCompany}>{dev.company}</Text>
@@ -27,15 +35,19 @@ export default function CustomMarker({ data: dev, navigateToProfile }: CustomMar
 
 const styles = StyleSheet.create({
     avatar: {
-        width: 54,
-        height: 54,
-        borderRadius: 4,
+        width: 64,
+        height: 64,
         borderWidth: 4,
-        borderColor: '#FFF',
+        borderColor: '#E8EAED',
+        borderRadius: 32,
+    },
+
+    currentUser: {
+        borderColor: '#4285F4',
     },
 
     callout: {
-        width: 260,
+        width: 240,
     },
 
     devName: {

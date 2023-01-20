@@ -20,14 +20,13 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
     const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
     const [authError, setAuthError] = useState<string>();
 
-    const mapViewRef = useRef<MapView>(null);
-    const initialLocation = { latitude: 51.03, longitude: -114.093 };
+    const defaultLocation = { latitude: 51.03, longitude: -114.093 };
 
     const [markerLocation, setMarkerLocation] = useState<LatLng>();
     const [currentRegion, setCurrentRegion] = useState<Region>({
-        ...initialLocation,
-        latitudeDelta: 0.008,
-        longitudeDelta: 0.008,
+        ...defaultLocation,
+        latitudeDelta: 0.004,
+        longitudeDelta: 0.004,
     });
 
     // useEffect(() => {
@@ -58,10 +57,6 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
         }
     }
 
-    const zoomToUserLocation = () => {
-        mapViewRef.current?.animateToRegion(currentRegion);
-    };
-
     const handleMapPress = (event: MapPressEvent) => {
         setMarkerLocation(event.nativeEvent.coordinate);
     };
@@ -75,7 +70,6 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                 // setIsAuthenticating(false);
                 // navigation.navigate('EventsMap');
 
-                console.log(response);
                 setIsAuthenticating(false);
                 navigation.replace('Main');
             })
@@ -102,19 +96,21 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                 }}
             >
                 <MapView
-                    ref={mapViewRef}
-                    onRegionChangeComplete={() => {}}
-                    showsUserLocation={true}
+                    onPress={handleMapPress}
                     region={currentRegion}
                     style={styles.map}
-                    onMapReady={zoomToUserLocation}
-                    onPress={handleMapPress}
+                    showsUserLocation={true}
+                    showsMyLocationButton={false}
+                    toolbarEnabled={false}
+                    provider="google"
+                    mapPadding={{ top: 64, right: 24, bottom: 128, left: 24 }}
                 >
                     {markerLocation && <Marker coordinate={markerLocation} />}
                 </MapView>
                 <TextInput
                     style={[styles.input, usernameIsInvalid && { borderColor: 'red' }]}
                     autoCapitalize="none"
+                    autoCorrect={false}
                     placeholder="Insert your github username..."
                     onChangeText={(value) => setUsername(value)}
                     onEndEditing={() => {
@@ -150,10 +146,10 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: '#fff',
         borderColor: '#031b6233',
+        borderRadius: 4,
         borderWidth: 1,
         height: 56,
-        paddingTop: 16,
-        paddingBottom: 16,
+        paddingVertical: 16,
         paddingHorizontal: 24,
         marginBottom: 16,
         color: '#333',
