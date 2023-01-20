@@ -6,7 +6,7 @@ const api = axios.create({
 });
 
 export function getUsers() {
-  return api.get<User>("/users/");
+  return api.get<User[]>("/users/");
 }
 
 export function postUser(user: Omit<User, "id">) {

@@ -4,8 +4,8 @@ import MapView, { Marker, Callout, LatLng, Region } from 'react-native-maps';
 import { requestForegroundPermissionsAsync, getCurrentPositionAsync } from 'expo-location';
 import { StackScreenProps } from '@react-navigation/stack';
 
-import devsDb from '../../db.json';
 import { StatusBar } from 'expo-status-bar';
+import { getUsers } from '../services/api';
 
 interface Developer {
     id: number;
@@ -24,7 +24,16 @@ function Main({ navigation }: StackScreenProps<any>) {
     const [currentRegion, setCurrentRegion] = useState<Region>();
 
     useEffect(() => {
-        setDevs(devsDb as Developer[]);
+        getUsers().then(users => setDevs(users.data.map(user => ({
+            id: user.id,
+            name: user.github,
+            avatar_url: "https://i1.wp.com/aaronphelan.me/wp-content/uploads/2020/06/undraw_male_avatar_323b.png",
+            login: "string",
+            company: "string",
+            bio: "string",
+            coordinates: user.location,
+        }))))
+
         loadInitialPosition();
     }, []);
 
