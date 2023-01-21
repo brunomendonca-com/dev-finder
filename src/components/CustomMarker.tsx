@@ -20,13 +20,13 @@ export default function CustomMarker({ data: user, handleCalloutPress }: CustomM
     console.log('[Context] currentUser:', currentUser);
 
     return (
-        <Marker key={user.id} coordinate={user.coordinates} onCalloutPress={() => handleCalloutPress(user.login)}>
+        <Marker key={user.id} coordinate={user.coordinates}>
             <Image
                 style={[styles.avatar, isCurrentUser && styles.currentUser]}
                 source={{ uri: user.avatar_url }}
                 resizeMode="contain"
             />
-            <Callout>
+            <Callout onPress={() => handleCalloutPress(user.login)}>
                 <View style={styles.callout}>
                     <Text style={styles.devName}>{user.name}</Text>
                     <Text style={styles.devCompany}>{user.company}</Text>
