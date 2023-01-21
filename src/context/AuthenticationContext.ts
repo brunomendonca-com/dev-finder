@@ -1,9 +1,8 @@
-import { createContext } from "react";
+import { createContext } from 'react';
 
 export type AuthenticationContextObject = {
-  value: string | null;
-  setValue: (newValue: string | null) => void;
+    value: string | null;
+    setValue: (newValue: string | null) => void;
 };
 
-export const AuthenticationContext =
-  createContext<AuthenticationContextObject | null>(null);
+export const AuthenticationContext = createContext<AuthenticationContextObject | null>(null);
