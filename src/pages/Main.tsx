@@ -44,7 +44,7 @@ function Main({ navigation }: StackScreenProps<any>) {
 
     function handleLogout() {
         try {
-            removeFromCache('currentUser1');
+            removeFromCache('currentUser');
             navigation.replace('Setup');
         } catch (e) {
             console.log('[handleLogout]', e);

@@ -2,8 +2,8 @@ import * as github from '../services/github';
 
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, TextInput } from 'react-native';
-import MapView, { LatLng, MapPressEvent, Marker, Region } from 'react-native-maps';
+import { Alert, StyleSheet, TextInput } from 'react-native';
+import MapView, { LatLng, MapPressEvent, Marker, PoiClickEvent, Region } from 'react-native-maps';
 
 import { StackScreenProps } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -13,6 +13,7 @@ import BigButton from '../components/BigButton';
 import { AuthenticationContext } from '../context/AuthenticationContext';
 import { postUser } from '../services/api';
 import { getFromCache, setInCache } from '../services/caching';
+import axios from 'axios';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
@@ -56,43 +57,39 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
         }
     }
 
-    const handleMapPress = (event: MapPressEvent) => {
+    const handleMapPress = (event: MapPressEvent | PoiClickEvent) => {
+        console.log("pressed", event.nativeEvent.coordinate)
         setMarkerLocation(event.nativeEvent.coordinate);
     };
 
-    const handleAuthentication = () => {
+    const handleAuthentication = async () => {
         setIsAuthenticating(true);
-        github
-            .getUserInfo(username)
-            .then(({ data: githubInfo }) => {
-                // TODO check if user already exists and prevent duplications
-                postUser({
-                    login: githubInfo.login,
-                    avatar_url: githubInfo.avatar_url,
-                    bio: githubInfo.bio,
-                    company: githubInfo.company,
-                    coordinates: {
-                        latitude: markerLocation.latitude,
-                        longitude: markerLocation.longitude,
-                    },
-                    name: githubInfo.name,
-                });
-            })
-            .then(() => {
-                setInCache('currentUser', username);
-                authenticationContext?.setValue(username);
-                setIsAuthenticating(false);
-                navigation.replace('Main');
-            })
-            .catch((error) => {
-                // console.log(error)
-                // if (error.response) {
-                //     setAuthError(error.response.data);
-                // } else {
-                //     setAuthError('Something went wrong.');
-                // }
-                setIsAuthenticating(false);
+        try {
+            const githubReq = await github.getUserInfo(username);
+            const githubInfo = githubReq.data;
+            await postUser({
+                login: githubInfo.login,
+                avatar_url: githubInfo.avatar_url,
+                bio: githubInfo.bio,
+                company: githubInfo.company,
+                coordinates: {
+                    latitude: markerLocation.latitude,
+                    longitude: markerLocation.longitude,
+                },
+                name: githubInfo.name,
             });
+            await setInCache('currentUser', username);
+            authenticationContext?.setValue(username);
+            navigation.replace('Main');
+        } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status == 404) {
+                Alert.alert("Username does not exist on GitHub.")
+            } else {
+                Alert.alert("Something went wrong.")
+            }
+        } finally {
+            setIsAuthenticating(false);
+        }
     };
 
     return (
@@ -109,6 +106,7 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
             >
                 <MapView
                     onPress={handleMapPress}
+                    onPoiClick={handleMapPress}
                     region={currentRegion}
                     style={styles.map}
                     showsUserLocation={true}
