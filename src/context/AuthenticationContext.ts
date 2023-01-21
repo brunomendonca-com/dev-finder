@@ -1,9 +1,9 @@
-import { createContext } from 'react';
-import { LatLng } from 'react-native-maps';
+import { createContext } from "react";
 
 export type AuthenticationContextObject = {
-    value: string;
-    setValue: (newValue: string | undefined) => void;
+  value: string | null;
+  setValue: (newValue: string | null) => void;
 };
 
-export const AuthenticationContext = createContext<AuthenticationContextObject | null>(null);
+export const AuthenticationContext =
+  createContext<AuthenticationContextObject | null>(null);

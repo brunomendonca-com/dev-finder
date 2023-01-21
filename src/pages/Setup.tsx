@@ -29,7 +29,7 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
   const authenticationContext = useContext(AuthenticationContext);
   const [username, setUsername] = useState("");
 
-  const [isAuthenticating, setIsAuthenticating] = useState<boolean>(true);
+  const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
 
   const defaultLocation = { latitude: 51.03, longitude: -114.093 };
 
@@ -41,17 +41,6 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
   });
 
   useEffect(() => {
-    getFromCache("currentUser")
-      .then((currentUser) => {
-        authenticationContext?.setValue(currentUser as string);
-        navigation.navigate("Main");
-      })
-      .catch(() => {
-        setIsAuthenticating(false);
-      });
-  }, []);
-
-  useEffect(() => {
     tryGetCurrentPosition()
       .then((curPos) => {
         setMarkerLocation(curPos);
@@ -61,17 +50,6 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
         /* do nothing and keep the default location and region */
       });
   }, []);
-
-  async function loadInitialPosition() {
-    const { status } = await requestForegroundPermissionsAsync();
-
-    if (status === "granted") {
-      const { coords } = await getCurrentPositionAsync();
-      const { latitude, longitude } = coords;
-      setMarkerLocation({ latitude, longitude });
-      setCurrentRegion({ ...currentRegion, latitude, longitude });
-    }
-  }
 
   const handleMapPress = (event: MapPressEvent | PoiClickEvent) => {
     setMarkerLocation(event.nativeEvent.coordinate);
@@ -98,15 +76,12 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
           coordinates: markerLocation,
         })
       )
-      .then(() => setInCache("currentUser", username))
       .then(() => {
         authenticationContext?.setValue(username);
-        navigation.replace("Main");
+        navigation.replace("Main")
       })
-      .catch((err) => {
-        setIsAuthenticating(false);
-        Alert.alert(String(err));
-      });
+      .catch((err) => Alert.alert(String(err)))
+      .finally(() => setIsAuthenticating(false));
   };
 
   return (
