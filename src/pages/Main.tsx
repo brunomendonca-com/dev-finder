@@ -82,6 +82,8 @@ function Main({ navigation }: StackScreenProps<any>) {
                 showsMyLocationButton={false}
                 moveOnMarkerPress={false}
                 toolbarEnabled={false}
+                showsIndoors={false}
+                mapType="mutedStandard"
                 provider="google"
             >
                 {devs.map((dev) => (
