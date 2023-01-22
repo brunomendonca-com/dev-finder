@@ -25,4 +25,4 @@ jobs:
               run: yarn install
 
             - name: 🚀 Build Android on EAS
-              run: eas build --platform android --non-interactive
+              run: npx eas build --platform android --non-interactive
