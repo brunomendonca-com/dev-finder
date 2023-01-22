@@ -13,7 +13,7 @@ import User from '../types/user';
 
 function Main({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
-    const cachedUser = authenticationContext?.value;
+    const storedUser = authenticationContext?.value;
     const mapViewRef = useRef<MapView>(null);
     const [devs, setDevs] = useState<User[]>([]);
     const [userLocation, setUserLocation] = useState<LatLng | undefined>();
@@ -46,8 +46,8 @@ function Main({ navigation }: StackScreenProps<any>) {
     }
 
     function handleLogout() {
-        if (cachedUser) {
-            getUserByLogin(cachedUser)
+        if (storedUser) {
+            getUserByLogin(storedUser)
                 .then((response) => response.data[0]?.id)
                 .then((id) => {
                     deleteUser(id as number)

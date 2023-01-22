@@ -11,8 +11,8 @@ interface CustomMarkerProps {
 }
 
 export default function CustomMarker({ data: user, handleCalloutPress }: CustomMarkerProps) {
-    const cachedUser = useContext(AuthenticationContext)?.value;
-    const isCurrentUser = user.login === cachedUser;
+    const storedUser = useContext(AuthenticationContext)?.value;
+    const isCurrentUser = user.login === storedUser;
 
     return (
         <Marker key={user.id} coordinate={user.coordinates}>

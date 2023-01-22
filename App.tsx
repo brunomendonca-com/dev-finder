@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AuthenticationContext, AuthenticationContextObject } from './src/context/AuthenticationContext';
 import Routes from './src/routes';
-import { getFromCache, removeFromCache, setInCache } from './src/services/caching';
+import { getFromStorage, removeFromStorage, setInStorage } from './src/services/storage';
 
 export default function App() {
     const [username, setUsername] = useState<string | null>(null);
@@ -12,17 +12,17 @@ export default function App() {
         setValue: (username) => {
             setUsername(username);
             if (username) {
-                setInCache('currentUser', username);
+                setInStorage('currentUser', username);
             } else {
-                removeFromCache('currentUser');
+                removeFromStorage('currentUser');
             }
         },
     };
 
     useEffect(() => {
-        getFromCache<string>('currentUser')
-            .then((cachedUser) => {
-                setUsername(cachedUser);
+        getFromStorage<string>('currentUser')
+            .then((storedUser) => {
+                setUsername(storedUser);
                 setInitialRouteName('Main');
             })
             .catch(() => setInitialRouteName('Setup'));

@@ -1,18 +1,17 @@
 import * as github from '../services/github';
 
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert, StyleSheet, TextInput } from 'react-native';
 import MapView, { LatLng, MapPressEvent, Marker, PoiClickEvent, Region } from 'react-native-maps';
-import React, { useContext, useEffect, useState } from 'react';
-import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
-import { getFromCache, setInCache } from '../services/caching';
 
-import { AuthenticationContext } from '../context/AuthenticationContext';
-import BigButton from '../components/BigButton';
+import { StackScreenProps } from '@react-navigation/stack';
+import axios from 'axios';
+import { StatusBar } from 'expo-status-bar';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spinner from 'react-native-loading-spinner-overlay';
-import { StackScreenProps } from '@react-navigation/stack';
-import { StatusBar } from 'expo-status-bar';
-import axios from 'axios';
+
+import BigButton from '../components/BigButton';
+import { AuthenticationContext } from '../context/AuthenticationContext';
 import { postUser } from '../services/api';
 import { tryGetCurrentPosition } from '../utils/location';
 
