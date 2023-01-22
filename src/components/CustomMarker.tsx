@@ -10,14 +10,9 @@ interface CustomMarkerProps {
     handleCalloutPress: (username: string) => void;
 }
 
-// TODO get current user from context
-const currentUsername = 'brunomendonca-com';
-
 export default function CustomMarker({ data: user, handleCalloutPress }: CustomMarkerProps) {
-    const currentUser = useContext(AuthenticationContext)?.value;
-
-    const isCurrentUser = user.login === currentUsername;
-    console.log('[Context] currentUser:', currentUser);
+    const cachedUser = useContext(AuthenticationContext)?.value;
+    const isCurrentUser = user.login === cachedUser;
 
     return (
         <Marker key={user.id} coordinate={user.coordinates}>

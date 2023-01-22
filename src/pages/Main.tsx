@@ -8,22 +8,23 @@ import MapView, { LatLng, Region } from 'react-native-maps';
 
 import CustomMarker from '../components/CustomMarker';
 import { AuthenticationContext } from '../context/AuthenticationContext';
-import { getUsers } from '../services/api';
-import { removeFromCache } from '../services/caching';
+import { getUsers, deleteUser, getUserByLogin } from '../services/api';
 import User from '../types/user';
 
 function Main({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
+    const cachedUser = authenticationContext?.value;
     const mapViewRef = useRef<MapView>(null);
     const [devs, setDevs] = useState<User[]>([]);
     const [userLocation, setUserLocation] = useState<LatLng | undefined>();
     const [currentRegion, setCurrentRegion] = useState<Region>();
 
     useEffect(() => {
-        getUsers().then((users) => {
-            setDevs(users.data);
-        });
-
+        getUsers()
+            .then((users) => {
+                setDevs(users.data);
+            })
+            .catch((err) => Alert.alert(String(err)));
         loadInitialPosition();
     }, []);
 
@@ -45,8 +46,23 @@ function Main({ navigation }: StackScreenProps<any>) {
     }
 
     function handleLogout() {
-        authenticationContext?.setValue(null);
-        navigation.replace('Setup');
+        if (cachedUser) {
+            getUserByLogin(cachedUser)
+                .then((response) => response.data[0]?.id)
+                .then((id) => {
+                    deleteUser(id as number)
+                        .then(() => {
+                            authenticationContext?.setValue(null);
+                            navigation.replace('Setup');
+                        })
+                        .catch((err) => {
+                            Alert.alert(String(err));
+                        });
+                })
+                .catch((err) => {
+                    Alert.alert(String(err));
+                });
+        }
     }
 
     function fitAll() {
