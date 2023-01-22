@@ -97,7 +97,7 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                     showsIndoors={false}
                     mapType="mutedStandard"
                     provider="google"
-                    mapPadding={{ top: 64, right: 24, bottom: 128, left: 24 }}
+                    mapPadding={{ top: 0, right: 24, bottom: 128, left: 24 }}
                 >
                     <Marker coordinate={markerLocation} />
                 </MapView>

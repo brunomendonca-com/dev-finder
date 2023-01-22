@@ -98,6 +98,7 @@ function Main({ navigation }: StackScreenProps<any>) {
                 showsIndoors={false}
                 mapType="mutedStandard"
                 provider="google"
+                mapPadding={{ top: 0, right: 24, bottom: 0, left: 24 }}
             >
                 {devs.map((dev) => (
                     <CustomMarker
