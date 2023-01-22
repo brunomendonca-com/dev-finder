@@ -3,16 +3,31 @@
     "name": "devFinder",
     "slug": "dev-finder",
     "privacy": "public",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bvcmobiledev.devfinder"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "583304e0-8c0e-4560-bb1d-f9eea5684d7f"
+      }
+    },
+    "android": {
+      "package": "com.bvcmobiledev.devfinder"
     }
   }
 }
