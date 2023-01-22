@@ -2,7 +2,7 @@ import axios from 'axios';
 import User from '../types/user';
 
 const api = axios.create({
-    baseURL: 'http://192.168.1.209:3000/',
+    baseURL: 'https://my-json-server.typicode.com/bvc-mobile-dev/dev-finder/',
 });
 
 export function getUsers() {
