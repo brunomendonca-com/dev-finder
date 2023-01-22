@@ -5,12 +5,12 @@ import React, { useContext } from 'react';
 import { AuthenticationContext } from '../context/AuthenticationContext';
 import User from '../types/user';
 
-interface CustomMarkerProps {
+interface UserMarkerProps {
     data: User;
     handleCalloutPress: (username: string) => void;
 }
 
-export default function CustomMarker({ data: user, handleCalloutPress }: CustomMarkerProps) {
+export default function UserMarker({ data: user, handleCalloutPress }: UserMarkerProps) {
     const currentUser = useContext(AuthenticationContext)?.value;
     const isCurrentUser = user.login === currentUser;
 

@@ -5,7 +5,7 @@ import { deleteUser, getUserByLogin, getUsers } from '../services/users';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
 
 import { AuthenticationContext } from '../context/AuthenticationContext';
-import CustomMarker from '../components/CustomMarker';
+import UserMarker from '../components/UserMarker';
 import { RectButton } from 'react-native-gesture-handler';
 import { StackScreenProps } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -101,7 +101,7 @@ export default function Main({ navigation }: StackScreenProps<any>) {
                 mapPadding={{ top: 0, right: 24, bottom: 0, left: 24 }}
             >
                 {devs.map((dev) => (
-                    <CustomMarker
+                    <UserMarker
                         key={dev.id}
                         data={dev}
                         handleCalloutPress={(githubUsername) => {
