@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
 import { Callout, Marker } from 'react-native-maps';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import React, { useContext } from 'react';
 
 import { AuthenticationContext } from '../context/AuthenticationContext';
 import User from '../types/user';
@@ -11,8 +11,8 @@ interface CustomMarkerProps {
 }
 
 export default function CustomMarker({ data: user, handleCalloutPress }: CustomMarkerProps) {
-    const storedUser = useContext(AuthenticationContext)?.value;
-    const isCurrentUser = user.login === storedUser;
+    const currentUser = useContext(AuthenticationContext)?.value;
+    const isCurrentUser = user.login === currentUser;
 
     return (
         <Marker key={user.id} coordinate={user.coordinates}>

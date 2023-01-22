@@ -1,63 +1,63 @@
-import { StackScreenProps } from '@react-navigation/stack';
-import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
-import { StatusBar } from 'expo-status-bar';
-import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text } from 'react-native';
-import { RectButton } from 'react-native-gesture-handler';
 import MapView, { LatLng, Region } from 'react-native-maps';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { deleteUser, getUserByLogin, getUsers } from '../services/users';
+import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
 
-import CustomMarker from '../components/CustomMarker';
 import { AuthenticationContext } from '../context/AuthenticationContext';
-import { getUsers, deleteUser, getUserByLogin } from '../services/api';
+import CustomMarker from '../components/CustomMarker';
+import { RectButton } from 'react-native-gesture-handler';
+import { StackScreenProps } from '@react-navigation/stack';
+import { StatusBar } from 'expo-status-bar';
 import User from '../types/user';
+import { DEFAULT_LOCATION, tryGetCurrentPosition } from '../utils/location';
 
-function Main({ navigation }: StackScreenProps<any>) {
+export default function Main({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
-    const storedUser = authenticationContext?.value;
+    const currentUser = authenticationContext?.value;
+
     const mapViewRef = useRef<MapView>(null);
+
     const [devs, setDevs] = useState<User[]>([]);
-    const [userLocation, setUserLocation] = useState<LatLng | undefined>();
+    const [userLocation, setUserLocation] = useState<LatLng>();
     const [currentRegion, setCurrentRegion] = useState<Region>();
 
     useEffect(() => {
         getUsers()
-            .then((users) => {
-                setDevs(users.data);
-            })
+            .then(setDevs)
             .catch((err) => Alert.alert(String(err)));
+
         loadInitialPosition();
     }, []);
 
-    async function loadInitialPosition() {
-        const { status } = await requestForegroundPermissionsAsync();
-
-        if (status === 'granted') {
-            const { coords } = await getCurrentPositionAsync();
-            setUserLocation(coords);
-
-            const { latitude, longitude } = coords;
-            setCurrentRegion({
-                latitude,
-                longitude,
-                latitudeDelta: 0.1,
-                longitudeDelta: 0.1,
+    function loadInitialPosition() {
+        tryGetCurrentPosition()
+            .catch(() => DEFAULT_LOCATION)
+            .then((coords) => {
+                setUserLocation(coords);
+                setCurrentRegion({
+                    ...coords,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1,
+                });
             });
-        }
     }
 
     function handleLogout() {
-        if (storedUser) {
-            getUserByLogin(storedUser)
-                .then((response) => response.data[0]?.id)
-                .then((id) => {
-                    deleteUser(id as number)
-                        .then(() => {
-                            authenticationContext?.setValue(null);
-                            navigation.replace('Setup');
-                        })
-                        .catch((err) => {
-                            Alert.alert(String(err));
-                        });
+        if (currentUser) {
+            getUserByLogin(currentUser)
+                .then((user) => {
+                    if (user) {
+                        return deleteUser(user.id);
+                    } else {
+                        // User should exist, since they are currently logged in.
+                        // There is nothing to be done here but...
+                        // TODO log this on your tracking system so it can be investigated
+                    }
+                })
+                .then(() => {
+                    authenticationContext?.setValue(null);
+                    navigation.replace('Setup');
                 })
                 .catch((err) => {
                     Alert.alert(String(err));
@@ -139,5 +139,3 @@ const styles = StyleSheet.create({
         color: 'white',
     },
 });
-
-export default Main;

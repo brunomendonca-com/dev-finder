@@ -1,35 +1,32 @@
-import React from 'react';
-import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text } from 'react-native';
+
+import React from 'react';
 import { RectButton } from 'react-native-gesture-handler';
 
 interface BigButtonProps {
     label: string;
     color: string;
     style?: {};
-    featherIconName?: keyof typeof Feather.glyphMap;
-    disabled?: boolean;
     onPress: () => void;
 }
 
 export default function BigButton(props: BigButtonProps) {
-    const styles = styling(props);
-    const { featherIconName, label, style, onPress } = props;
+    const styles = styling(props.color);
+    const { label, style, onPress } = props;
 
     return (
         <RectButton style={[styles.button, style]} onPress={onPress}>
-            {featherIconName && <Feather style={styles.icon} name={featherIconName} size={24} color="#FFF" />}
             <Text style={styles.label}>{label}</Text>
         </RectButton>
     );
 }
 
-const styling = ({ color, disabled }: BigButtonProps) =>
+const styling = (color: string) =>
     StyleSheet.create({
         button: {
             paddingVertical: 14,
             paddingHorizontal: 32,
-            backgroundColor: disabled ? color + '80' : color,
+            backgroundColor: color,
             maxHeight: 56,
             borderRadius: 4,
 

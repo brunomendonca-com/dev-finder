@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
 
-function Profile({ route }: any) {
+export default function Profile({ route }: any) {
     const { githubUsername } = route.params;
 
     return (
@@ -12,5 +12,3 @@ function Profile({ route }: any) {
         </>
     );
 }
-
-export default Profile;

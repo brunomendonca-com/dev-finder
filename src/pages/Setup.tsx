@@ -1,19 +1,17 @@
-import * as github from '../services/github';
-
-import React, { useContext, useEffect, useState } from 'react';
 import { Alert, StyleSheet, TextInput } from 'react-native';
 import MapView, { LatLng, MapPressEvent, Marker, PoiClickEvent, Region } from 'react-native-maps';
+import React, { useContext, useEffect, useState } from 'react';
 
-import { StackScreenProps } from '@react-navigation/stack';
-import axios from 'axios';
-import { StatusBar } from 'expo-status-bar';
+import { AuthenticationContext } from '../context/AuthenticationContext';
+import BigButton from '../components/BigButton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spinner from 'react-native-loading-spinner-overlay';
-
-import BigButton from '../components/BigButton';
-import { AuthenticationContext } from '../context/AuthenticationContext';
-import { postUser } from '../services/api';
-import { tryGetCurrentPosition } from '../utils/location';
+import { StackScreenProps } from '@react-navigation/stack';
+import { StatusBar } from 'expo-status-bar';
+import axios from 'axios';
+import { getUserInfo as getGitHubUserInfo } from '../services/github';
+import { postUser } from '../services/users';
+import { DEFAULT_LOCATION, tryGetCurrentPosition } from '../utils/location';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
@@ -21,11 +19,9 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
     const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
 
-    const defaultLocation = { latitude: 51.03, longitude: -114.093 };
-
-    const [markerLocation, setMarkerLocation] = useState<LatLng>(defaultLocation);
+    const [markerLocation, setMarkerLocation] = useState<LatLng>(DEFAULT_LOCATION);
     const [currentRegion, setCurrentRegion] = useState<Region>({
-        ...defaultLocation,
+        ...DEFAULT_LOCATION,
         latitudeDelta: 0.004,
         longitudeDelta: 0.004,
     });
@@ -47,8 +43,7 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
 
     const handleSignUp = async () => {
         setIsAuthenticating(true);
-        github
-            .getUserInfo(username)
+        getGitHubUserInfo(username)
             .catch((err) => {
                 if (axios.isAxiosError(err) && err.response?.status == 404) {
                     return Promise.reject('There is no such username on GitHub.');
@@ -56,13 +51,13 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                     return Promise.reject(err);
                 }
             })
-            .then(({ data: githubInfo }) =>
+            .then((fromGitHub) =>
                 postUser({
-                    login: githubInfo.login,
-                    avatar_url: githubInfo.avatar_url,
-                    bio: githubInfo.bio,
-                    company: githubInfo.company,
-                    name: githubInfo.name,
+                    login: fromGitHub.login,
+                    avatar_url: fromGitHub.avatar_url,
+                    bio: fromGitHub.bio,
+                    company: fromGitHub.company,
+                    name: fromGitHub.name,
                     coordinates: markerLocation,
                 })
             )
