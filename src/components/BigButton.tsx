@@ -7,15 +7,16 @@ interface BigButtonProps {
     label: string;
     color: string;
     style?: {};
+    testID?: string;
     onPress: () => void;
 }
 
 export default function BigButton(props: BigButtonProps) {
     const styles = styling(props.color);
-    const { label, style, onPress } = props;
+    const { label, style, onPress, testID } = props;
 
     return (
-        <RectButton style={[styles.button, style]} onPress={onPress}>
+        <RectButton testID={testID} style={[styles.button, style]} onPress={onPress}>
             <Text style={styles.label}>{label}</Text>
         </RectButton>
     );

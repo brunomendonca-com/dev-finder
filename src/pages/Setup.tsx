@@ -1,17 +1,16 @@
-import { Alert, StyleSheet, TextInput } from 'react-native';
+import { Alert, KeyboardAvoidingView, StyleSheet, TextInput, View } from 'react-native';
+import { DEFAULT_LOCATION, tryGetCurrentPosition } from '../utils/location';
 import MapView, { LatLng, MapPressEvent, Marker, PoiClickEvent, Region } from 'react-native-maps';
 import React, { useContext, useEffect, useState } from 'react';
 
 import { AuthenticationContext } from '../context/AuthenticationContext';
 import BigButton from '../components/BigButton';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spinner from 'react-native-loading-spinner-overlay';
 import { StackScreenProps } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import { getUserInfo as getGitHubUserInfo } from '../services/github';
 import { postUser } from '../services/users';
-import { DEFAULT_LOCATION, tryGetCurrentPosition } from '../utils/location';
 
 export default function Setup({ navigation }: StackScreenProps<any>) {
     const authenticationContext = useContext(AuthenticationContext);
@@ -72,15 +71,7 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
     return (
         <>
             <StatusBar style="dark" />
-            <KeyboardAwareScrollView
-                style={styles.container}
-                contentContainerStyle={{
-                    padding: 24,
-                    flexGrow: 1,
-                    justifyContent: 'flex-end',
-                    alignItems: 'stretch',
-                }}
-            >
+            <View style={styles.container}>
                 <MapView
                     onPress={handleMapPress}
                     onPoiClick={handleMapPress}
@@ -96,21 +87,24 @@ export default function Setup({ navigation }: StackScreenProps<any>) {
                 >
                     <Marker coordinate={markerLocation} />
                 </MapView>
-                <TextInput
-                    style={styles.input}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    placeholder="Insert your GitHub username"
-                    onChangeText={setUsername}
-                />
-                <BigButton onPress={handleSignUp} label="Sign Up" color="#031A62" />
-                <Spinner
-                    visible={isAuthenticating}
-                    textContent="Authenticating..."
-                    overlayColor="#031A62BF"
-                    textStyle={styles.spinnerText}
-                />
-            </KeyboardAwareScrollView>
+                <KeyboardAvoidingView style={styles.form} behavior="position">
+                    <TextInput
+                        testID="input"
+                        style={styles.input}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        placeholder="Insert your GitHub username"
+                        onChangeText={setUsername}
+                    />
+                    <BigButton testID="button" onPress={handleSignUp} label="Sign Up" color="#031A62" />
+                </KeyboardAvoidingView>
+            </View>
+            <Spinner
+                visible={isAuthenticating}
+                textContent="Authenticating..."
+                overlayColor="#031A62BF"
+                textStyle={styles.spinnerText}
+            />
         </>
     );
 }
@@ -122,6 +116,14 @@ const styles = StyleSheet.create({
 
     map: {
         ...StyleSheet.absoluteFillObject,
+    },
+
+    form: {
+        position: 'absolute',
+        right: 0,
+        left: 0,
+        bottom: 0,
+        padding: 24,
     },
 
     spinnerText: {
