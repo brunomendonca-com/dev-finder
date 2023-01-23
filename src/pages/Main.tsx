@@ -92,7 +92,7 @@ export default function Main({ navigation }: StackScreenProps<any>) {
                 initialRegion={currentRegion}
                 onMapReady={fitAll}
                 showsUserLocation={true}
-                showsMyLocationButton={false}
+                showsMyLocationButton={true}
                 moveOnMarkerPress={false}
                 toolbarEnabled={false}
                 showsIndoors={false}
